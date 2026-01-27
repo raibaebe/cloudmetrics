@@ -47,31 +47,40 @@ class ReportUploadSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
     password_confirm = serializers.CharField(write_only=True)
+    is_admin = serializers.BooleanField(write_only=True, required=False, default=False)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'password_confirm']
+        fields = ['username', 'email', 'password', 'password_confirm', 'is_admin']
 
     def validate(self, data):
         if data['password'] != data['password_confirm']:
-            raise serializers.ValidationError({'password_confirm': 'Пароли не совпадают'})
+            raise serializers.ValidationError({'password_confirm': 'Passwords do not match'})
         return data
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError('Пользователь с таким именем уже существует')
+            raise serializers.ValidationError('A user with this username already exists')
         return value
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('Пользователь с таким email уже существует')
+            raise serializers.ValidationError('A user with this email already exists')
         return value
 
     def create(self, validated_data):
         validated_data.pop('password_confirm')
+        is_admin = validated_data.pop('is_admin', False)
+
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password']
         )
+
+        if is_admin:
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
+
         return user

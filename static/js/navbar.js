@@ -24,7 +24,10 @@ class AppNavbar extends HTMLElement {
                             <div class="flex items-center gap-6">
                                 <div class="flex gap-4">
                                     <a href="/data/" class="text-gray-600 hover:text-blue-600">Data</a>
-                                    ${isAdmin ? `<a href="/admin-panel/" class="text-gray-600 hover:text-blue-600">Admin Panel</a>` : ''}
+                                    ${isAdmin ? `
+                                        <a href="/admin-panel/" class="text-gray-600 hover:text-blue-600">Admin Panel</a>
+                                        <a href="/register/" class="text-gray-600 hover:text-blue-600">Create User</a>
+                                    ` : ''}
                                 </div>
 
                                 <div class="flex items-center gap-4">
@@ -37,7 +40,11 @@ class AppNavbar extends HTMLElement {
                                     </button>
                                 </div>
                             </div>
-                        ` : ''}
+                        ` : `
+                            <div class="flex items-center gap-4">
+                                <a href="/" class="text-gray-600 hover:text-blue-600">Login</a>
+                            </div>
+                        `}
                     </div>
                 </div>
             </nav>

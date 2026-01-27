@@ -23,6 +23,10 @@ const Auth = {
         return user ? JSON.parse(user) : null;
     },
 
+    getToken() {
+        return this.getAccessToken();
+    },
+
     setUser(user) {
         localStorage.setItem('user', JSON.stringify(user));
     },
