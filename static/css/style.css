@@ -1,0 +1,65 @@
+/* Custom styles for DataVaultPro */
+
+/* Table styles */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    text-align: left;
+}
+
+/* Form input focus states */
+input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Button disabled state */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Card hover effect */
+.cursor-pointer:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Responsive table wrapper */
+.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+}
