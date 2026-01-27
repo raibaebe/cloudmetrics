@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Data - DataVaultPro{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Reports</h1>
+
+    <div id="reports-loading" class="text-gray-500">Loading reports...</div>
+    <div id="reports-empty" class="hidden text-gray-500">No reports available.</div>
+
+    <div id="reports-grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        Auth.requireAuth();
+        loadReports();
+    });
+
+    async function loadReports() {
+        const loadingDiv = document.getElementById('reports-loading');
+        const emptyDiv = document.getElementById('reports-empty');
+        const grid = document.getElementById('reports-grid');
+
+        try {
+            const data = await API.get('/api/reports/');
+            const reports = data.results || data;
+
+            loadingDiv.classList.add('hidden');
+
+            if (reports.length === 0) {
+                emptyDiv.classList.remove('hidden');
+                return;
+            }
+
+            grid.innerHTML = '';
+            reports.forEach(report => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer';
+                card.innerHTML = `
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">${escapeHtml(report.title)}</h3>
+                    <p class="text-sm text-gray-600 mb-1">Rows: ${report.row_count}</p>
+                    <p class="text-sm text-gray-600 mb-1">Uploaded by: ${escapeHtml(report.uploaded_by.username)}</p>
+                    <p class="text-sm text-gray-500">${new Date(report.uploaded_at).toLocaleString()}</p>
+                `;
+                card.addEventListener('click', () => {
+                    window.location.href = `/report/${report.id}/`;
+                });
+                grid.appendChild(card);
+            });
+
+            grid.classList.remove('hidden');
+        } catch (error) {
+            loadingDiv.textContent = 'Failed to load reports.';
+        }
+    }
+</script>
+{% endblock %}
