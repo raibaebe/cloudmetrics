@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 import pandas as pd
 
 from .models import Report, ReportData
-from .serializers import ReportSerializer, ReportUploadSerializer, ReportDataSerializer, UserSerializer
+from .serializers import ReportSerializer, ReportUploadSerializer, ReportDataSerializer, UserSerializer, RegisterSerializer
 from .permissions import IsAdminUser
 
 
@@ -109,3 +109,16 @@ class ReportViewSet(viewsets.ModelViewSet):
 def current_user(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register(request):
+    serializer = RegisterSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        return Response({
+            'message': 'Регистрация успешна',
+            'user': UserSerializer(user).data
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -14,6 +14,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include('core.urls')),
     path('', TemplateView.as_view(template_name='login.html'), name='login'),
+    path('register/', TemplateView.as_view(template_name='register.html'), name='register_page'),
     path('data/', TemplateView.as_view(template_name='data.html'), name='data'),
     path('admin-panel/', TemplateView.as_view(template_name='admin_panel.html'), name='admin_panel'),
     path('report/<int:pk>/', TemplateView.as_view(template_name='report_detail.html'), name='report_detail'),

@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# datavaultpro
-=======
 # DataVaultPro
 
 Django веб-приложение с JWT аутентификацией, загрузкой Excel файлов (только для админов) и просмотром данных.
@@ -109,4 +106,3 @@ python manage.py runserver
 - Pandas 3.0.0
 - OpenPyXL 3.1.5
 - TailwindCSS (CDN)
->>>>>>> 42fcec4 (Initial commit)
