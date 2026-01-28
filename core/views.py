@@ -45,28 +45,69 @@ class ReportViewSet(viewsets.ModelViewSet):
         )
 
         try:
-            df = pd.read_excel(file, engine='openpyxl')
-            headers = df.columns.tolist()
+            df = pd.read_excel(file, engine='openpyxl', header=None, dtype=str)
+
+            if df.empty:
+                raise ValueError("Excel file is empty")
+
+            df = df.dropna(axis=1, how='all')
+            df = df.reset_index(drop=True)
+
+            if df.empty or len(df) < 1:
+                raise ValueError("Excel file has no data")
+
+            header_idx = 0
+            num_cols = len(df.columns)
+            for idx in range(min(10, len(df))):
+                row = df.iloc[idx]
+                non_empty = sum(1 for val in row if not pd.isna(val) and str(val).strip() != '')
+                if non_empty >= num_cols * 0.3:
+                    header_idx = idx
+                    break
+
+            header_row = df.iloc[header_idx]
+            headers = []
+            used_names = set()
+            for i in range(num_cols):
+                val = header_row.iloc[i] if i < len(header_row) else None
+                if pd.isna(val) or str(val).strip() == '':
+                    name = f'col_{i}'
+                else:
+                    name = str(val).strip()
+                if name in used_names:
+                    name = f'{name}_{i}'
+                used_names.add(name)
+                headers.append(name)
+
+            df = df.iloc[header_idx + 1:]
+            df = df.dropna(how='all')
+            df = df.reset_index(drop=True)
 
             report_data_objects = []
+            row_num = 1
             for idx, row in df.iterrows():
+                if row.isna().all():
+                    continue
                 row_data = {}
-                for header in headers:
-                    value = row[header]
-                    if pd.isna(value):
-                        row_data[str(header)] = None
-                    elif isinstance(value, (int, float)):
-                        row_data[str(header)] = value
+                for i, header in enumerate(headers):
+                    value = row.iloc[i] if i < len(row) else None
+                    if pd.isna(value) or value is None:
+                        row_data[header] = None
                     else:
-                        row_data[str(header)] = str(value)
+                        try:
+                            num_val = float(value)
+                            row_data[header] = num_val if num_val != int(num_val) else int(num_val)
+                        except (ValueError, TypeError):
+                            row_data[header] = str(value)
 
                 report_data_objects.append(
                     ReportData(
                         report=report,
-                        row_number=idx + 1,
+                        row_number=row_num,
                         data=row_data
                     )
                 )
+                row_num += 1
 
             ReportData.objects.bulk_create(report_data_objects, batch_size=1000)
 

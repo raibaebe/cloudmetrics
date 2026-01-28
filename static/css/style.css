@@ -1,65 +1,167 @@
-/* Custom styles for DataVaultPro */
+:root {
+    --primary-teal: #008b8a;
+    --primary-teal-dark: #007170;
+    --primary-teal-light: #00a6a5;
+    --secondary-orange: #F05E22;
+    --secondary-orange-light: #F18356;
+    --accent-yellow: #FFEA8A;
+    --neutral-white: #FFFFFF;
+    --neutral-light-gray: #F2F2EF;
+    --neutral-gray: #E5E5E5;
+    --text-dark: #444444;
+    --text-medium: #666666;
+    --text-light: #999999;
+}
 
-/* Table styles */
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.btn-primary {
+    background: linear-gradient(to bottom, var(--secondary-orange), var(--secondary-orange-light));
+    color: var(--neutral-white);
+    padding: 14px 32px;
+    border-radius: 4px;
+    border: none;
+    border-bottom: 4px solid #d94d1a;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    box-shadow: 0 4px 12px rgba(240, 94, 34, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    border-bottom-width: 2px;
+}
+
+.btn-secondary {
+    background: var(--primary-teal);
+    color: var(--neutral-white);
+    padding: 12px 28px;
+    border-radius: 4px;
+    border: none;
+    border-bottom: 4px solid var(--primary-teal-dark);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: var(--primary-teal-light);
+    box-shadow: 0 4px 12px rgba(0, 139, 138, 0.3);
+}
+
 table {
     border-collapse: collapse;
     width: 100%;
+    background: var(--neutral-white);
+    border-radius: 4px;
+    overflow: hidden;
 }
 
-th, td {
+th {
+    background: var(--primary-teal);
+    color: var(--neutral-white);
     text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
 }
 
-/* Form input focus states */
-input:focus {
+td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--neutral-gray);
+}
+
+tr:hover {
+    background: var(--neutral-light-gray);
+}
+
+input:focus, textarea:focus, select:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 0 2px var(--primary-teal);
+    border-color: var(--primary-teal);
 }
 
-/* Button disabled state */
+input, textarea, select {
+    border: 1px solid var(--neutral-gray);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
 button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-/* Card hover effect */
-.cursor-pointer:hover {
-    transform: translateY(-2px);
-    transition: transform 0.2s ease;
+.card {
+    background: var(--neutral-white);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
-/* Scrollbar styling */
+.card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--neutral-light-gray);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
+    background: var(--primary-teal);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #a1a1a1;
+    background: var(--primary-teal-dark);
 }
 
-/* Loading spinner animation */
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
 .animate-spin {
     animation: spin 1s linear infinite;
 }
 
-/* Responsive table wrapper */
 .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
 }
+
+a {
+    color: var(--primary-teal);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--primary-teal-dark);
+}
+
+.bg-primary { background-color: var(--primary-teal); }
+.bg-secondary { background-color: var(--secondary-orange); }
+.text-primary { color: var(--primary-teal); }
+.text-secondary { color: var(--secondary-orange); }

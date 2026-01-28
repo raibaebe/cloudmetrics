@@ -177,7 +177,33 @@ const API = {
     },
 
     async delete(url) {
-        return this.fetch(url, { method: 'DELETE' });
+        const accessToken = Auth.getAccessToken();
+        let response = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+
+        if (response.status === 401) {
+            const newToken = await Auth.refreshAccessToken();
+            response = await fetch(url, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${newToken}` }
+            });
+        }
+
+        if (!response.ok && response.status !== 204) {
+            const text = await response.text();
+            let message = 'Delete failed';
+            if (text) {
+                try {
+                    const data = JSON.parse(text);
+                    message = data.detail || message;
+                } catch (e) {}
+            }
+            throw new Error(message);
+        }
+
+        return true;
     }
 };
 

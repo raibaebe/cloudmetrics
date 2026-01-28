@@ -13,37 +13,31 @@ class AppNavbar extends HTMLElement {
         const isAdmin = Auth.isAdmin();
 
         this.innerHTML = `
-            <nav class="bg-white shadow-md">
+            <nav class="shadow-md" style="background-color: var(--primary-teal);">
                 <div class="container mx-auto px-4">
-                    <div class="flex justify-between items-center py-4">
-                        <a href="${isLoggedIn ? (isAdmin ? '/admin-panel/' : '/data/') : '/'}" class="text-xl font-bold text-blue-600">
-                            DataVaultPro
+                    <div class="flex justify-between items-center py-3">
+                        <a href="${isLoggedIn ? (isAdmin ? '/admin-panel/' : '/data/') : '/'}">
+                            <img src="/static/images/logo-otbasy-bank.svg" alt="Отбасы банк" style="width: 200px; max-height: 100px; object-fit: contain; margin: 10px 0 10px 50px;">
                         </a>
-
                         ${isLoggedIn ? `
-                            <div class="flex items-center gap-6">
-                                <div class="flex gap-4">
-                                    <a href="/data/" class="text-gray-600 hover:text-blue-600">Data</a>
+                            <div class="flex items-center gap-8">
+                                <div class="hidden md:flex gap-6">
+                                    <a href="/data/" class="text-white hover:text-accent-yellow font-medium transition-colors">Данные</a>
                                     ${isAdmin ? `
-                                        <a href="/admin-panel/" class="text-gray-600 hover:text-blue-600">Admin Panel</a>
-                                        <a href="/register/" class="text-gray-600 hover:text-blue-600">Create User</a>
+                                        <a href="/admin-panel/" class="text-white hover:text-accent-yellow font-medium transition-colors">Панель администратора</a>
+                                        <a href="/register/" class="text-white hover:text-accent-yellow font-medium transition-colors">Создать пользователя</a>
                                     ` : ''}
                                 </div>
-
                                 <div class="flex items-center gap-4">
-                                    <span class="text-sm text-gray-600">
-                                        ${user ? user.username : ''}
-                                        ${isAdmin ? '<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Admin</span>' : ''}
-                                    </span>
-                                    <button id="logout-btn" class="text-sm text-red-600 hover:text-red-800">
-                                        Logout
-                                    </button>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm text-white font-medium">${user ? user.username : ''}</span>
+                                        ${isAdmin ? '<span class="bg-white text-xs px-2 py-1 rounded font-semibold" style="color: var(--primary-teal);">Админ</span>' : ''}
+                                    </div>
+                                    <button id="logout-btn" class="text-sm font-medium px-4 py-2 rounded bg-white" style="color: var(--primary-teal);">Выход</button>
                                 </div>
                             </div>
                         ` : `
-                            <div class="flex items-center gap-4">
-                                <a href="/" class="text-gray-600 hover:text-blue-600">Login</a>
-                            </div>
+                            <a href="/" class="btn-primary text-sm">Вход</a>
                         `}
                     </div>
                 </div>

@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Data - DataVaultPro{% endblock %}
+{% block title %}Отчеты - Отбасы банк{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Reports</h1>
+<div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold mb-8" style="color: var(--text-dark);">Отчеты</h1>
 
-    <div id="reports-loading" class="text-gray-500">Loading reports...</div>
-    <div id="reports-empty" class="hidden text-gray-500">No reports available.</div>
+    <div id="reports-loading" class="text-lg" style="color: var(--text-medium);">Загрузка отчетов...</div>
+    <div id="reports-empty" class="hidden text-lg" style="color: var(--text-medium);">Нет доступных отчетов.</div>
 
     <div id="reports-grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     </div>
@@ -40,12 +40,23 @@
             grid.innerHTML = '';
             reports.forEach(report => {
                 const card = document.createElement('div');
-                card.className = 'bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer';
+                card.className = 'card p-6 cursor-pointer';
                 card.innerHTML = `
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">${escapeHtml(report.title)}</h3>
-                    <p class="text-sm text-gray-600 mb-1">Rows: ${report.row_count}</p>
-                    <p class="text-sm text-gray-600 mb-1">Uploaded by: ${escapeHtml(report.uploaded_by.username)}</p>
-                    <p class="text-sm text-gray-500">${new Date(report.uploaded_at).toLocaleString()}</p>
+                    <h3 class="text-xl font-bold mb-3" style="color: var(--text-dark);">${escapeHtml(report.title)}</h3>
+                    <div class="space-y-2">
+                        <p class="text-sm" style="color: var(--text-medium);">
+                            <span class="font-semibold">Строк:</span> ${report.row_count}
+                        </p>
+                        <p class="text-sm" style="color: var(--text-medium);">
+                            <span class="font-semibold">Загрузил:</span> ${escapeHtml(report.uploaded_by.username)}
+                        </p>
+                        <p class="text-sm" style="color: var(--text-light);">
+                            ${new Date(report.uploaded_at).toLocaleString('ru-RU')}
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t" style="border-color: var(--neutral-gray);">
+                        <span class="text-sm font-semibold" style="color: var(--primary-teal);">Просмотреть отчет →</span>
+                    </div>
                 `;
                 card.addEventListener('click', () => {
                     window.location.href = `/report/${report.id}/`;
@@ -55,7 +66,7 @@
 
             grid.classList.remove('hidden');
         } catch (error) {
-            loadingDiv.textContent = 'Failed to load reports.';
+            loadingDiv.textContent = 'Не удалось загрузить отчеты.';
         }
     }
 </script>

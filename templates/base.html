@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}DataVaultPro{% endblock %}</title>
+    <title>{% block title %}Отбасы банк - DataVault{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col" style="background-color: var(--neutral-light-gray);">
     <app-navbar></app-navbar>
 
     <main class="flex-grow container mx-auto px-4 py-8">
@@ -16,9 +17,9 @@
 
     <app-footer></app-footer>
 
-    <script src="/static/js/script.js"></script>
-    <script src="/static/js/navbar.js"></script>
-    <script src="/static/js/footer.js"></script>
+    <script src="/static/js/script.js?v=2"></script>
+    <script src="/static/js/navbar.js?v=2"></script>
+    <script src="/static/js/footer.js?v=2"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
