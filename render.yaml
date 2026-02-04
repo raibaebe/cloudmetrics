@@ -1,0 +1,26 @@
+databases:
+  - name: cloudmtrx-db
+    databaseName: cloudmtrx
+    user: cloudmtrx
+    plan: free
+
+services:
+  - type: web
+    name: cloudmtrx
+    plan: free
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn cloudmtrx.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cloudmtrx-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ".onrender.com,cloudmtrx.com,www.cloudmtrx.com"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
