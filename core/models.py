@@ -1,11 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class Report(models.Model):
     title = models.CharField(max_length=255)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_at = models.DateTimeField(default=timezone.now)
     file = models.FileField(upload_to='reports/')
     headers = models.JSONField(default=list, blank=True)  # Store column order
     reporting_period = models.CharField(max_length=255, blank=True, null=True)  # Editable period
