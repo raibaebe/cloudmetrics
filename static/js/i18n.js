@@ -194,7 +194,7 @@ const I18n = {
 
     // Translation mappings for data values (Russian -> Kazakh)
     dataTranslations: {
-        // Months
+        // Months (capitalized)
         'Январь': 'Қаңтар',
         'Февраль': 'Ақпан',
         'Март': 'Наурыз',
@@ -207,14 +207,30 @@ const I18n = {
         'Октябрь': 'Қазан',
         'Ноябрь': 'Қараша',
         'Декабрь': 'Желтоқсан',
+        // Months (lowercase)
+        'январь': 'қаңтар',
+        'февраль': 'ақпан',
+        'март': 'наурыз',
+        'апрель': 'сәуір',
+        'май': 'мамыр',
+        'июнь': 'маусым',
+        'июль': 'шілде',
+        'август': 'тамыз',
+        'сентябрь': 'қыркүйек',
+        'октябрь': 'қазан',
+        'ноябрь': 'қараша',
+        'декабрь': 'желтоқсан',
         // Totals
         'Итого': 'Барлығы',
         'Всего': 'Барлығы',
         'всего': 'барлығы',
         'итого': 'барлығы',
+        'ИТОГО': 'БАРЛЫҒЫ',
+        'ВСЕГО': 'БАРЛЫҒЫ',
         // Column headers
         'Месяцы': 'Айлар',
         'Месяц': 'Ай',
+        'месяц': 'ай',
         'Цена': 'Баға',
         'Стоимость': 'Құны',
         'цена': 'баға',
@@ -225,7 +241,21 @@ const I18n = {
     translateValue(value) {
         if (this.currentLang !== 'kk' || !value) return value;
         const strValue = String(value).trim();
-        return this.dataTranslations[strValue] || strValue;
+
+        // Direct match
+        if (this.dataTranslations[strValue]) {
+            return this.dataTranslations[strValue];
+        }
+
+        // Case-insensitive match
+        const lowerValue = strValue.toLowerCase();
+        for (const [ru, kk] of Object.entries(this.dataTranslations)) {
+            if (ru.toLowerCase() === lowerValue) {
+                return kk;
+            }
+        }
+
+        return strValue;
     },
 
     // Translate column header if Kazakh is selected
