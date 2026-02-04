@@ -319,7 +319,7 @@
 
                 currentReportingPeriod = newPeriod;
                 savedReportingPeriod = newPeriod;
-                document.getElementById('report-period').textContent = newPeriod;
+                document.getElementById('report-period').textContent = I18n.translatePeriod(newPeriod);
 
                 periodEdit.classList.add('hidden');
                 periodDisplay.classList.remove('hidden');
@@ -369,7 +369,9 @@
             } else {
                 currentReportingPeriod = detectReportPeriod(rows, headers);
             }
-            document.getElementById('report-period').textContent = currentReportingPeriod;
+            // Translate the period if Kazakh is selected
+            const displayPeriod = I18n.translatePeriod(currentReportingPeriod);
+            document.getElementById('report-period').textContent = displayPeriod;
 
             const displayHeader = (h) => {
                 if (h.startsWith('Unnamed') || h.startsWith('col_')) return '';

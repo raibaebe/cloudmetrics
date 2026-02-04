@@ -262,6 +262,21 @@ const I18n = {
     translateHeader(header) {
         if (this.currentLang !== 'kk' || !header) return header;
         return this.dataTranslations[header] || header;
+    },
+
+    // Translate a period string like "Апрель - Декабрь 2025" to Kazakh
+    translatePeriod(periodStr) {
+        if (this.currentLang !== 'kk' || !periodStr) return periodStr;
+
+        let result = periodStr;
+        // Replace each Russian month with Kazakh equivalent
+        for (const [ru, kk] of Object.entries(this.dataTranslations)) {
+            // Only replace month names (not totals or other words)
+            if (ru.length > 3 && !['Итого', 'Всего', 'итого', 'всего', 'ИТОГО', 'ВСЕГО', 'Месяцы', 'Месяц', 'месяц', 'Цена', 'Стоимость', 'цена', 'стоимость'].includes(ru)) {
+                result = result.replace(new RegExp(ru, 'gi'), kk);
+            }
+        }
+        return result;
     }
 };
 
