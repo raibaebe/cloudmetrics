@@ -1,12 +1,12 @@
 
-# DataVaultPro
+# Cloud Metrics
 
 Django веб-приложение с JWT аутентификацией, загрузкой Excel файлов (только для админов) и просмотром данных.
 
 ## Структура проекта
 
 ```
-datavaultpro/
+cloudmtrx/
 ├── manage.py                 # Точка входа Django
 ├── requirements.txt          # Зависимости Python
 ├── db.sqlite3               # База данных (создаётся после миграций)
@@ -48,7 +48,7 @@ datavaultpro/
 
 ### 2. Создать виртуальное окружение
 ```bash
-cd datavaultpro
+cd cloudtrx
 python3 -m venv venv
 ```
 

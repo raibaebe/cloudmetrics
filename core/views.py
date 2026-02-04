@@ -111,6 +111,10 @@ class ReportViewSet(viewsets.ModelViewSet):
 
             ReportData.objects.bulk_create(report_data_objects, batch_size=1000)
 
+            # Save headers to preserve column order
+            report.headers = headers
+            report.save(update_fields=['headers'])
+
         except Exception as e:
             report.delete()
             return Response(
@@ -133,8 +137,10 @@ class ReportViewSet(viewsets.ModelViewSet):
         if page is not None:
             serializer = ReportDataSerializer(page, many=True)
             response = paginator.get_paginated_response(serializer.data)
-            headers = []
-            if data_rows.exists():
+            # Use stored headers to preserve column order
+            headers = report.headers if report.headers else []
+            # Fallback for old reports without stored headers
+            if not headers and data_rows.exists():
                 first_row = data_rows.first()
                 if first_row and first_row.data:
                     headers = list(first_row.data.keys())
@@ -163,3 +169,31 @@ def register(request):
             'user': UserSerializer(user).data
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def list_users(request):
+    users = User.objects.all().order_by('-date_joined')
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        if user == request.user:
+            return Response(
+                {'error': 'Cannot delete yourself'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        username = user.username
+        user.delete()
+        return Response({'message': f'User {username} deleted successfully'})
+    except User.DoesNotExist:
+        return Response(
+            {'error': 'User not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )

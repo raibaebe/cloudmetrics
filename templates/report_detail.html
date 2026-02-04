@@ -4,35 +4,37 @@
 
 {% block content %}
 <div class="max-w-full mx-auto">
-    <div id="report-loading" class="text-lg" style="color: var(--text-medium);">Загрузка отчета...</div>
+    <div id="report-loading" class="text-lg" style="color: var(--text-medium);"></div>
 
     <div id="report-container" class="hidden">
         <div class="mb-6">
-            <a href="/data/" class="text-sm font-semibold hover:underline" style="color: var(--primary-teal);">
-                ← Назад к отчетам
-            </a>
+            <a href="/data/" id="back-link" class="text-sm font-semibold hover:underline" style="color: var(--primary-teal);"></a>
         </div>
 
         <div class="card p-8 mb-6">
             <h1 id="report-title" class="text-3xl font-bold mb-6" style="color: var(--text-dark);"></h1>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm">
                 <div>
-                    <span class="font-semibold" style="color: var(--text-dark);">Загрузил:</span>
-                    <span id="report-user" style="color: var(--text-medium);"></span>
+                    <span class="font-semibold" style="color: var(--text-dark);" id="label-upload-date"></span>
+                    <span id="report-date-display">
+                        <span id="report-date" style="color: var(--text-medium);"></span>
+                        <button id="edit-date-btn" class="hidden ml-2 text-xs px-2 py-1 rounded" style="background-color: var(--primary-teal); color: white;">✎</button>
+                    </span>
+                    <span id="report-date-edit" class="hidden">
+                        <input type="datetime-local" id="date-input" class="text-sm px-2 py-1 border rounded" style="border-color: var(--neutral-gray);">
+                        <button id="save-date-btn" class="ml-1 text-xs px-2 py-1 rounded" style="background-color: var(--primary-teal); color: white;">✓</button>
+                        <button id="cancel-date-btn" class="ml-1 text-xs px-2 py-1 rounded" style="background-color: var(--neutral-gray); color: var(--text-dark);">✕</button>
+                    </span>
                 </div>
                 <div>
-                    <span class="font-semibold" style="color: var(--text-dark);">Дата загрузки:</span>
-                    <span id="report-date" style="color: var(--text-medium);"></span>
-                </div>
-                <div>
-                    <span class="font-semibold" style="color: var(--text-dark);">Всего строк:</span>
-                    <span id="report-rows" style="color: var(--text-medium);"></span>
+                    <span class="font-semibold" style="color: var(--text-dark);" id="label-reporting-period"></span>
+                    <span id="report-period" style="color: var(--text-medium);"></span>
                 </div>
             </div>
         </div>
 
         <div class="card p-8">
-            <h2 class="text-2xl font-semibold mb-6" style="color: var(--text-dark);">Данные</h2>
+            <h2 class="text-2xl font-semibold mb-6" style="color: var(--text-dark);" id="data-heading"></h2>
 
             <div class="overflow-x-auto">
                 <table id="data-table" class="min-w-full">
@@ -45,22 +47,16 @@
 
             <div id="pagination" class="hidden mt-6 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="text-sm font-medium" style="color: var(--text-medium);">
-                    Показаны <span id="showing-start"></span> - <span id="showing-end"></span> из <span id="total-count"></span> строк
+                    <span id="label-showing"></span> <span id="showing-start"></span> - <span id="showing-end"></span> <span id="label-of"></span> <span id="total-count"></span> <span id="label-rows"></span>
                 </div>
                 <div class="flex gap-3">
-                    <button id="prev-btn" class="btn-secondary px-5 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                        Назад
-                    </button>
-                    <button id="next-btn" class="btn-secondary px-5 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                        Далее
-                    </button>
+                    <button id="prev-btn" class="btn-secondary px-5 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"></button>
+                    <button id="next-btn" class="btn-secondary px-5 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"></button>
                 </div>
             </div>
 
             <div id="admin-actions" class="hidden mt-8 pt-6 border-t" style="border-color: var(--neutral-gray);">
-                <button id="delete-btn" class="px-6 py-3 rounded font-semibold text-white" style="background-color: #dc2626;">
-                    Удалить отчет
-                </button>
+                <button id="delete-btn" class="px-6 py-3 rounded font-semibold text-white" style="background-color: #dc2626;"></button>
             </div>
         </div>
     </div>
@@ -75,9 +71,113 @@
     const pageSize = 50;
 
     let reportTitle = '';
+    let currentUploadedAt = null;
+
+    // Column names that should be formatted as currency (Tenge)
+    const currencyColumns = ['Стоимость', 'Цена', 'стоимость', 'цена', 'cost', 'price', 'Cost', 'Price', 'Құны', 'Баға'];
+
+    // Column names that should be formatted as numbers (request counts)
+    const numberColumns = ['Bedrock', 'Nova Lite', 'Nova Pro', 'всего', 'Всего', 'total', 'Total', 'requests', 'Запросы', 'Сұраныстар', 'bedrock', 'nova lite', 'nova pro'];
+
+    // Price per request columns (formatted differently)
+    const pricePerRequestColumns = ['Цена', 'цена', 'price', 'Price', 'Баға'];
+
+    function updateLabels() {
+        const t = I18n.t.bind(I18n);
+
+        document.getElementById('report-loading').textContent = t('loadingReport');
+        document.getElementById('back-link').textContent = t('backToReports');
+        document.getElementById('label-upload-date').textContent = t('uploadDate') + ': ';
+        document.getElementById('label-reporting-period').textContent = t('reportingPeriod') + ': ';
+        document.getElementById('data-heading').textContent = t('data');
+        document.getElementById('label-showing').textContent = t('showing');
+        document.getElementById('label-of').textContent = t('of');
+        document.getElementById('label-rows').textContent = t('rows');
+        document.getElementById('prev-btn').textContent = t('prev');
+        document.getElementById('next-btn').textContent = t('next');
+        document.getElementById('delete-btn').textContent = t('deleteReport');
+    }
+
+    function isCurrencyColumn(header) {
+        return currencyColumns.some(col => header.toLowerCase().includes(col.toLowerCase()));
+    }
+
+    function isNumberColumn(header) {
+        return numberColumns.some(col => header.toLowerCase().includes(col.toLowerCase()));
+    }
+
+    function isPricePerRequestColumn(header) {
+        return pricePerRequestColumns.some(col => header.toLowerCase() === col.toLowerCase());
+    }
+
+    function formatCellValue(value, header) {
+        if (value === null || value === undefined || value === '') return '';
+
+        const strValue = String(value).trim();
+
+        // Check if it's a numeric value
+        const numValue = parseFloat(strValue.replace(/[\s,]/g, '').replace(',', '.'));
+
+        if (!isNaN(numValue)) {
+            // Price per request - show with decimal and ₸/запрос
+            if (isPricePerRequestColumn(header)) {
+                const formatted = numValue.toFixed(2).replace('.', ',');
+                return `${formatted} ₸`;
+            }
+
+            // Currency columns - format with Tenge symbol
+            if (isCurrencyColumn(header)) {
+                return Format.tenge(numValue);
+            }
+
+            // Number columns (request counts) - format with space separators
+            if (isNumberColumn(header)) {
+                return Format.number(numValue);
+            }
+
+            // Generic number - check if it's a large number
+            if (numValue >= 1000) {
+                return Format.number(numValue);
+            }
+        }
+
+        // Translate text values (months, totals) if Kazakh is selected
+        return I18n.translateValue(strValue);
+    }
+
+    function detectReportPeriod(rows, headers) {
+        // Try to detect the period from month column data
+        const monthHeader = headers.find(h =>
+            h.toLowerCase().includes('месяц') ||
+            h.toLowerCase().includes('ай') ||
+            h.toLowerCase().includes('month')
+        );
+
+        if (!monthHeader || rows.length === 0) {
+            return Format.date(new Date().toISOString(), { year: 'numeric' });
+        }
+
+        // Get first and last month values (filter out total rows)
+        const totalWords = ['всего', 'total', 'барлығы', 'итого', 'итог', 'sum', 'жиыны'];
+        const months = rows
+            .map(r => r.data[monthHeader])
+            .filter(m => m && !totalWords.some(word => m.toLowerCase().includes(word)));
+
+        if (months.length >= 2) {
+            const firstMonth = I18n.translateValue(months[0]);
+            const lastMonth = I18n.translateValue(months[months.length - 1]);
+            const currentYear = new Date().getFullYear();
+            return `${firstMonth} - ${lastMonth} ${currentYear}`;
+        } else if (months.length === 1) {
+            return I18n.translateValue(months[0]) + ' ' + new Date().getFullYear();
+        }
+
+        return Format.date(new Date().toISOString(), { year: 'numeric', month: 'long' });
+    }
 
     document.addEventListener('DOMContentLoaded', async function() {
         Auth.requireAuth();
+        updateLabels();
 
         const pathParts = window.location.pathname.split('/');
         reportId = pathParts[pathParts.length - 2];
@@ -88,6 +188,7 @@
         if (Auth.isAdmin()) {
             document.getElementById('admin-actions').classList.remove('hidden');
             document.getElementById('delete-btn').addEventListener('click', deleteReport);
+            setupDateEditing();
         }
 
         document.getElementById('prev-btn').addEventListener('click', () => {
@@ -110,26 +211,82 @@
             const report = await API.get(`/api/reports/${reportId}/`);
 
             reportTitle = report.title;
+            currentUploadedAt = report.uploaded_at;
             document.getElementById('report-title').textContent = report.title;
-            document.getElementById('report-user').textContent = report.uploaded_by.username;
-            document.getElementById('report-date').textContent = new Date(report.uploaded_at).toLocaleString('ru-RU');
-            document.getElementById('report-rows').textContent = report.row_count;
+            document.getElementById('report-date').textContent = Format.dateTime(report.uploaded_at);
+
+            // Show edit button for admins
+            if (Auth.isAdmin()) {
+                document.getElementById('edit-date-btn').classList.remove('hidden');
+            }
 
             document.getElementById('report-loading').classList.add('hidden');
             document.getElementById('report-container').classList.remove('hidden');
         } catch (error) {
-            document.getElementById('report-loading').textContent = 'Не удалось загрузить отчет.';
+            document.getElementById('report-loading').textContent = I18n.t('failedToLoadReport');
         }
     }
 
+    function setupDateEditing() {
+        const editBtn = document.getElementById('edit-date-btn');
+        const saveBtn = document.getElementById('save-date-btn');
+        const cancelBtn = document.getElementById('cancel-date-btn');
+        const dateDisplay = document.getElementById('report-date-display');
+        const dateEdit = document.getElementById('report-date-edit');
+        const dateInput = document.getElementById('date-input');
+
+        editBtn.addEventListener('click', () => {
+            // Convert current date to datetime-local format
+            const date = new Date(currentUploadedAt);
+            const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+                .toISOString()
+                .slice(0, 16);
+            dateInput.value = localDateTime;
+
+            dateDisplay.classList.add('hidden');
+            dateEdit.classList.remove('hidden');
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            dateEdit.classList.add('hidden');
+            dateDisplay.classList.remove('hidden');
+        });
+
+        saveBtn.addEventListener('click', async () => {
+            const newDate = dateInput.value;
+            if (!newDate) return;
+
+            try {
+                const isoDate = new Date(newDate).toISOString();
+                await API.fetch(`/api/reports/${reportId}/`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ uploaded_at: isoDate })
+                });
+
+                currentUploadedAt = isoDate;
+                document.getElementById('report-date').textContent = Format.dateTime(isoDate);
+
+                dateEdit.classList.add('hidden');
+                dateDisplay.classList.remove('hidden');
+            } catch (error) {
+                alert(I18n.currentLang === 'kk' ? 'Күнді сақтау мүмкін болмады' : 'Не удалось сохранить дату');
+            }
+        });
+    }
+
     async function deleteReport() {
-        if (!confirm(`Удалить отчет "${reportTitle}"?`)) return;
+        const confirmMsg = I18n.currentLang === 'kk'
+            ? `"${reportTitle}" есебін жою керек пе?`
+            : `Удалить отчет "${reportTitle}"?`;
+
+        if (!confirm(confirmMsg)) return;
 
         try {
             await API.delete(`/api/reports/${reportId}/`);
             window.location.href = '/data/';
         } catch (error) {
-            alert('Ошибка удаления: ' + (error.message || 'Попробуйте снова'));
+            const errorMsg = I18n.t('deleteError') + ': ' + (error.message || I18n.t('tryAgain'));
+            alert(errorMsg);
         }
     }
 
@@ -144,37 +301,69 @@
             const rows = data.results;
             const headers = data.headers || [];
 
+            // Detect and set the reporting period
+            const period = detectReportPeriod(rows, headers);
+            document.getElementById('report-period').textContent = period;
+
             const displayHeader = (h) => {
                 if (h.startsWith('Unnamed') || h.startsWith('col_')) return '';
-                return h;
+
+                // Add "(количество запросов)" below request count columns
+                const requestLabel = I18n.currentLang === 'kk' ? '(сұраныстар саны)' : '(количество запросов)';
+                if (h === 'Bedrock' || h === 'Nova Lite' || h === 'Nova Pro') {
+                    return `${h}<br><span style="font-size: 0.75em; font-weight: normal; text-transform: none;">${requestLabel}</span>`;
+                }
+
+                // Change "Цена" to "Цена за запрос" / "Сұраныс бағасы"
+                if (h === 'Цена' || h === 'цена') {
+                    return I18n.currentLang === 'kk' ? 'Сұраныс бағасы' : 'Цена за запрос';
+                }
+
+                // Translate other headers if Kazakh is selected
+                return I18n.translateHeader(h);
             };
 
             thead.innerHTML = '<tr>' + headers.map(h =>
-                `<th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">${escapeHtml(displayHeader(h))}</th>`
+                `<th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">${displayHeader(h)}</th>`
             ).join('') + '</tr>';
 
             tbody.innerHTML = '';
             rows.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = headers.map(h =>
-                    `<td class="px-6 py-4 text-sm" style="color: var(--text-dark);">${escapeHtml(String(row.data[h] ?? ''))}</td>`
-                ).join('');
+
+                // Check if this is a total row
+                const isTotal = headers.some(h => {
+                    const val = String(row.data[h] || '').toLowerCase();
+                    return val.includes('всего') || val.includes('итого') || val.includes('total') || val.includes('барлығы');
+                });
+
+                if (isTotal) {
+                    tr.style.fontWeight = 'bold';
+                    tr.style.backgroundColor = 'var(--neutral-light-gray)';
+                }
+
+                tr.innerHTML = headers.map(h => {
+                    const rawValue = row.data[h];
+                    const formattedValue = formatCellValue(rawValue, h);
+                    return `<td class="px-6 py-4 text-sm" style="color: var(--text-dark);">${escapeHtml(formattedValue)}</td>`;
+                }).join('');
                 tbody.appendChild(tr);
             });
 
             const start = (currentPage - 1) * pageSize + 1;
             const end = Math.min(currentPage * pageSize, totalCount);
 
-            document.getElementById('showing-start').textContent = start;
-            document.getElementById('showing-end').textContent = end;
-            document.getElementById('total-count').textContent = totalCount;
+            document.getElementById('showing-start').textContent = Format.number(start);
+            document.getElementById('showing-end').textContent = Format.number(end);
+            document.getElementById('total-count').textContent = Format.number(totalCount);
 
             document.getElementById('prev-btn').disabled = currentPage === 1;
             document.getElementById('next-btn').disabled = currentPage * pageSize >= totalCount;
 
             document.getElementById('pagination').classList.remove('hidden');
         } catch (error) {
-            tbody.innerHTML = '<tr><td colspan="100%" class="px-6 py-4 text-center text-red-500">Не удалось загрузить данные.</td></tr>';
+            const errorMsg = I18n.t('failedToLoad');
+            tbody.innerHTML = `<tr><td colspan="100%" class="px-6 py-4 text-center text-red-500">${errorMsg}</td></tr>`;
         }
     }
 </script>

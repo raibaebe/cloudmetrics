@@ -4,10 +4,10 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <h1 class="text-3xl font-bold mb-8" style="color: var(--text-dark);">Отчеты</h1>
+    <h1 id="page-title" class="text-3xl font-bold mb-8" style="color: var(--text-dark);"></h1>
 
-    <div id="reports-loading" class="text-lg" style="color: var(--text-medium);">Загрузка отчетов...</div>
-    <div id="reports-empty" class="hidden text-lg" style="color: var(--text-medium);">Нет доступных отчетов.</div>
+    <div id="reports-loading" class="text-lg" style="color: var(--text-medium);"></div>
+    <div id="reports-empty" class="hidden text-lg" style="color: var(--text-medium);"></div>
 
     <div id="reports-grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     </div>
@@ -18,13 +18,23 @@
 <script>
     document.addEventListener('DOMContentLoaded', async function() {
         Auth.requireAuth();
+        updateLabels();
         loadReports();
     });
+
+    function updateLabels() {
+        const isKk = I18n.currentLang === 'kk';
+        document.getElementById('page-title').textContent = isKk ? 'Есептер' : 'Отчеты';
+        document.getElementById('reports-loading').textContent = isKk ? 'Есептер жүктелуде...' : 'Загрузка отчетов...';
+        document.getElementById('reports-empty').textContent = isKk ? 'Қол жетімді есептер жоқ.' : 'Нет доступных отчетов.';
+    }
 
     async function loadReports() {
         const loadingDiv = document.getElementById('reports-loading');
         const emptyDiv = document.getElementById('reports-empty');
         const grid = document.getElementById('reports-grid');
+        const isKk = I18n.currentLang === 'kk';
+        const locale = isKk ? 'kk-KZ' : 'ru-RU';
 
         try {
             const data = await API.get('/api/reports/');
@@ -41,21 +51,16 @@
             reports.forEach(report => {
                 const card = document.createElement('div');
                 card.className = 'card p-6 cursor-pointer';
+                const viewText = isKk ? 'Есепті қарау →' : 'Просмотреть отчет →';
                 card.innerHTML = `
                     <h3 class="text-xl font-bold mb-3" style="color: var(--text-dark);">${escapeHtml(report.title)}</h3>
                     <div class="space-y-2">
-                        <p class="text-sm" style="color: var(--text-medium);">
-                            <span class="font-semibold">Строк:</span> ${report.row_count}
-                        </p>
-                        <p class="text-sm" style="color: var(--text-medium);">
-                            <span class="font-semibold">Загрузил:</span> ${escapeHtml(report.uploaded_by.username)}
-                        </p>
                         <p class="text-sm" style="color: var(--text-light);">
-                            ${new Date(report.uploaded_at).toLocaleString('ru-RU')}
+                            ${new Date(report.uploaded_at).toLocaleString(locale)}
                         </p>
                     </div>
                     <div class="mt-4 pt-4 border-t" style="border-color: var(--neutral-gray);">
-                        <span class="text-sm font-semibold" style="color: var(--primary-teal);">Просмотреть отчет →</span>
+                        <span class="text-sm font-semibold" style="color: var(--primary-teal);">${viewText}</span>
                     </div>
                 `;
                 card.addEventListener('click', () => {
@@ -66,7 +71,7 @@
 
             grid.classList.remove('hidden');
         } catch (error) {
-            loadingDiv.textContent = 'Не удалось загрузить отчеты.';
+            loadingDiv.textContent = isKk ? 'Есептерді жүктеу мүмкін болмады.' : 'Не удалось загрузить отчеты.';
         }
     }
 </script>

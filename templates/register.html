@@ -1,71 +1,148 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создать пользователя - Отбасы банк</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body class="min-h-screen" style="background-color: var(--neutral-light-gray);">
-    <app-navbar></app-navbar>
+{% extends 'base.html' %}
 
-    <div class="flex items-center justify-center py-12">
-        <div class="card p-10 w-full max-w-lg">
-            <h2 class="text-2xl text-center font-bold mb-8" style="color: var(--text-dark);">Создать нового пользователя</h2>
+{% block title %}Пользователи - Отбасы банк{% endblock %}
 
-            <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"></div>
-            <div id="success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4"></div>
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <h1 id="page-title" class="text-3xl font-bold mb-8" style="color: var(--text-dark);"></h1>
 
-            <form id="register-form">
-                <div class="mb-5">
-                    <label for="username" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);">Имя пользователя</label>
+    <!-- Create User Form -->
+    <div class="card p-8 mb-8">
+        <h2 id="create-title" class="text-2xl font-semibold mb-6" style="color: var(--text-dark);"></h2>
+
+        <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"></div>
+        <div id="success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4"></div>
+
+        <form id="register-form">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="username" id="label-username" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);"></label>
                     <input type="text" id="username" name="username" required class="border rounded w-full py-3 px-4" style="border-color: var(--neutral-gray); color: var(--text-dark);">
                 </div>
 
-                <div class="mb-5">
+                <div>
                     <label for="email" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);">Email</label>
                     <input type="email" id="email" name="email" required class="border rounded w-full py-3 px-4" style="border-color: var(--neutral-gray); color: var(--text-dark);">
                 </div>
 
-                <div class="mb-5">
-                    <label for="password" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);">Пароль</label>
+                <div>
+                    <label for="password" id="label-password" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);"></label>
                     <input type="password" id="password" name="password" required minlength="6" class="border rounded w-full py-3 px-4" style="border-color: var(--neutral-gray); color: var(--text-dark);">
                 </div>
 
-                <div class="mb-5">
-                    <label for="password_confirm" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);">Подтвердите пароль</label>
+                <div>
+                    <label for="password_confirm" id="label-confirm" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);"></label>
                     <input type="password" id="password_confirm" name="password_confirm" required minlength="6" class="border rounded w-full py-3 px-4" style="border-color: var(--neutral-gray); color: var(--text-dark);">
                 </div>
+            </div>
 
-                <div class="mb-8">
-                    <label class="block text-sm font-semibold mb-3" style="color: var(--text-dark);">Тип учетной записи</label>
-                    <div class="flex gap-6">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="account_type" value="user" checked class="form-radio h-5 w-5" style="color: var(--primary-teal);">
-                            <span class="ml-3 font-medium" style="color: var(--text-medium);">Обычный пользователь</span>
-                        </label>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="account_type" value="admin" class="form-radio h-5 w-5" style="color: var(--primary-teal);">
-                            <span class="ml-3 font-medium" style="color: var(--text-medium);">Администратор</span>
-                        </label>
-                    </div>
+            <div class="mt-6 mb-6">
+                <label id="label-account-type" class="block text-sm font-semibold mb-3" style="color: var(--text-dark);"></label>
+                <div class="flex gap-6">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="account_type" value="user" checked class="form-radio h-5 w-5" style="color: var(--primary-teal);">
+                        <span id="label-user" class="ml-3 font-medium" style="color: var(--text-medium);"></span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="account_type" value="admin" class="form-radio h-5 w-5" style="color: var(--primary-teal);">
+                        <span id="label-admin" class="ml-3 font-medium" style="color: var(--text-medium);"></span>
+                    </label>
                 </div>
+            </div>
 
-                <button type="submit" id="register-btn" class="w-full btn-primary">Создать пользователя</button>
-            </form>
-        </div>
+            <button type="submit" id="register-btn" class="btn-primary"></button>
+        </form>
     </div>
 
-    <app-footer></app-footer>
+    <!-- Users List -->
+    <div class="card p-8">
+        <h2 id="users-title" class="text-2xl font-semibold mb-6" style="color: var(--text-dark);"></h2>
 
-    <script src="/static/js/script.js?v=2"></script>
-    <script src="/static/js/navbar.js?v=2"></script>
-    <script src="/static/js/footer.js?v=2"></script>
-    <script>
+        <div id="users-loading" style="color: var(--text-medium);"></div>
+        <div id="users-empty" class="hidden" style="color: var(--text-medium);"></div>
+
+        <div id="users-table" class="hidden overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr>
+                        <th id="th-username" class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider"></th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Email</th>
+                        <th id="th-role" class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider"></th>
+                        <th id="th-created" class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider"></th>
+                        <th id="th-actions" class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider"></th>
+                    </tr>
+                </thead>
+                <tbody id="users-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const isKk = I18n.currentLang === 'kk';
+    const locale = isKk ? 'kk-KZ' : 'ru-RU';
+    const currentUser = Auth.getUser();
+
+    // Translations
+    const texts = {
+        pageTitle: isKk ? 'Пайдаланушыларды басқару' : 'Управление пользователями',
+        createTitle: isKk ? 'Жаңа пайдаланушы жасау' : 'Создать нового пользователя',
+        username: isKk ? 'Пайдаланушы аты' : 'Имя пользователя',
+        password: isKk ? 'Құпия сөз' : 'Пароль',
+        confirmPassword: isKk ? 'Құпия сөзді растаңыз' : 'Подтвердите пароль',
+        accountType: isKk ? 'Аккаунт түрі' : 'Тип учетной записи',
+        regularUser: isKk ? 'Қарапайым пайдаланушы' : 'Обычный пользователь',
+        administrator: isKk ? 'Әкімші' : 'Администратор',
+        createUser: isKk ? 'Пайдаланушы жасау' : 'Создать пользователя',
+        creating: isKk ? 'Жасалуда...' : 'Создание...',
+        usersTitle: isKk ? 'Барлық пайдаланушылар' : 'Все пользователи',
+        loading: isKk ? 'Жүктелуде...' : 'Загрузка...',
+        noUsers: isKk ? 'Пайдаланушылар жоқ.' : 'Нет пользователей.',
+        role: isKk ? 'Рөл' : 'Роль',
+        created: isKk ? 'Жасалған' : 'Создан',
+        actions: isKk ? 'Әрекеттер' : 'Действия',
+        delete: isKk ? 'Жою' : 'Удалить',
+        admin: isKk ? 'Әкімші' : 'Админ',
+        user: isKk ? 'Пайдаланушы' : 'Пользователь',
+        you: isKk ? '(сіз)' : '(вы)',
+        passwordMismatch: isKk ? 'Құпия сөздер сәйкес келмейді' : 'Пароли не совпадают',
+        createError: isKk ? 'Пайдаланушы жасау қатесі' : 'Ошибка создания пользователя',
+        userCreated: isKk ? 'пайдаланушысы сәтті жасалды!' : 'успешно создан!',
+        deleteConfirm: isKk ? 'пайдаланушысын жою керек пе?' : 'Удалить пользователя',
+        deleteError: isKk ? 'Жою қатесі:' : 'Ошибка удаления:',
+        loadError: isKk ? 'Пайдаланушыларды жүктеу мүмкін болмады.' : 'Не удалось загрузить пользователей.'
+    };
+
+    function updateLabels() {
+        document.getElementById('page-title').textContent = texts.pageTitle;
+        document.getElementById('create-title').textContent = texts.createTitle;
+        document.getElementById('label-username').textContent = texts.username;
+        document.getElementById('label-password').textContent = texts.password;
+        document.getElementById('label-confirm').textContent = texts.confirmPassword;
+        document.getElementById('label-account-type').textContent = texts.accountType;
+        document.getElementById('label-user').textContent = texts.regularUser;
+        document.getElementById('label-admin').textContent = texts.administrator;
+        document.getElementById('register-btn').textContent = texts.createUser;
+        document.getElementById('users-title').textContent = texts.usersTitle;
+        document.getElementById('users-loading').textContent = texts.loading;
+        document.getElementById('users-empty').textContent = texts.noUsers;
+        document.getElementById('th-username').textContent = texts.username;
+        document.getElementById('th-role').textContent = texts.role;
+        document.getElementById('th-created').textContent = texts.created;
+        document.getElementById('th-actions').textContent = texts.actions;
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
         if (!Auth.isLoggedIn() || !Auth.isAdmin()) {
             window.location.href = '/';
+            return;
         }
+
+        updateLabels();
+        loadUsers();
 
         document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -83,13 +160,13 @@
             successDiv.classList.add('hidden');
 
             if (password !== password_confirm) {
-                errorDiv.textContent = 'Пароли не совпадают';
+                errorDiv.textContent = texts.passwordMismatch;
                 errorDiv.classList.remove('hidden');
                 return;
             }
 
             registerBtn.disabled = true;
-            registerBtn.textContent = 'Создание...';
+            registerBtn.textContent = texts.creating;
 
             try {
                 const token = Auth.getToken();
@@ -105,7 +182,7 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    let errorMessage = 'Ошибка создания пользователя';
+                    let errorMessage = texts.createError;
                     if (data.detail) errorMessage = data.detail;
                     else if (data.username) errorMessage = data.username[0];
                     else if (data.email) errorMessage = data.email[0];
@@ -114,18 +191,100 @@
                     throw new Error(errorMessage);
                 }
 
-                successDiv.textContent = `Пользователь ${username} успешно создан!`;
+                successDiv.textContent = isKk ? `${username} ${texts.userCreated}` : `Пользователь ${username} ${texts.userCreated}`;
                 successDiv.classList.remove('hidden');
                 document.getElementById('register-form').reset();
+                loadUsers();
                 setTimeout(() => successDiv.classList.add('hidden'), 3000);
             } catch (error) {
                 errorDiv.textContent = error.message;
                 errorDiv.classList.remove('hidden');
             } finally {
                 registerBtn.disabled = false;
-                registerBtn.textContent = 'Создать пользователя';
+                registerBtn.textContent = texts.createUser;
             }
         });
-    </script>
-</body>
-</html>
+    });
+
+    async function loadUsers() {
+        const loadingDiv = document.getElementById('users-loading');
+        const emptyDiv = document.getElementById('users-empty');
+        const table = document.getElementById('users-table');
+        const tbody = document.getElementById('users-body');
+
+        try {
+            const token = Auth.getToken();
+            const response = await fetch('/api/users/', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to load users');
+
+            const users = await response.json();
+
+            loadingDiv.classList.add('hidden');
+
+            if (users.length === 0) {
+                emptyDiv.classList.remove('hidden');
+                table.classList.add('hidden');
+                return;
+            }
+
+            tbody.innerHTML = '';
+            users.forEach(user => {
+                const isCurrentUser = currentUser && currentUser.id === user.id;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 text-sm font-semibold" style="color: var(--text-dark);">
+                        ${escapeHtml(user.username)} ${isCurrentUser ? `<span class="text-xs" style="color: var(--primary-teal);">${texts.you}</span>` : ''}
+                    </td>
+                    <td class="px-6 py-4 text-sm" style="color: var(--text-medium);">${escapeHtml(user.email)}</td>
+                    <td class="px-6 py-4 text-sm">
+                        ${user.is_admin
+                            ? `<span class="px-2 py-1 text-xs rounded font-semibold" style="background-color: var(--primary-teal); color: white;">${texts.admin}</span>`
+                            : `<span class="px-2 py-1 text-xs rounded font-semibold" style="background-color: var(--neutral-gray); color: var(--text-dark);">${texts.user}</span>`}
+                    </td>
+                    <td class="px-6 py-4 text-sm" style="color: var(--text-medium);">${new Date(user.date_joined || Date.now()).toLocaleDateString(locale)}</td>
+                    <td class="px-6 py-4 text-sm">
+                        ${isCurrentUser
+                            ? '-'
+                            : `<button onclick="deleteUser(${user.id}, '${escapeHtml(user.username)}')" class="font-semibold hover:underline" style="color: #dc2626;">${texts.delete}</button>`}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            emptyDiv.classList.add('hidden');
+            table.classList.remove('hidden');
+        } catch (error) {
+            loadingDiv.textContent = texts.loadError;
+        }
+    }
+
+    async function deleteUser(id, username) {
+        const confirmMsg = isKk ? `"${username}" ${texts.deleteConfirm}` : `${texts.deleteConfirm} "${username}"?`;
+        if (!confirm(confirmMsg)) return;
+
+        try {
+            const token = Auth.getToken();
+            const response = await fetch(`/api/users/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Delete failed');
+            }
+
+            loadUsers();
+        } catch (error) {
+            alert(texts.deleteError + ' ' + error.message);
+        }
+    }
+</script>
+{% endblock %}

@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'is_admin']
+        fields = ['id', 'username', 'email', 'is_admin', 'date_joined']
 
     def get_is_admin(self, obj):
         return obj.is_staff or obj.is_superuser
@@ -27,7 +27,7 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ['id', 'title', 'uploaded_by', 'uploaded_at', 'file', 'row_count']
-        read_only_fields = ['uploaded_by', 'uploaded_at']
+        read_only_fields = ['uploaded_by']
 
     def get_row_count(self, obj):
         return obj.data_rows.count()

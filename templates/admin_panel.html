@@ -4,48 +4,45 @@
 
 {% block content %}
 <div class="max-w-5xl mx-auto">
-    <h1 class="text-3xl font-bold mb-8" style="color: var(--text-dark);">Панель администратора</h1>
+    <h1 id="page-title" class="text-3xl font-bold mb-8" style="color: var(--text-dark);"></h1>
 
     <div class="card p-8 mb-8">
-        <h2 class="text-2xl font-semibold mb-6" style="color: var(--text-dark);">Загрузка Excel файла</h2>
+        <h2 id="upload-title" class="text-2xl font-semibold mb-6" style="color: var(--text-dark);"></h2>
 
         <div id="upload-message" class="hidden px-4 py-3 rounded mb-4"></div>
 
         <form id="upload-form" enctype="multipart/form-data">
             <div class="mb-6">
-                <label for="title" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);">Название отчета</label>
+                <label for="title" id="label-report-name" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);"></label>
                 <input type="text" id="title" name="title" required
                     class="shadow-sm border rounded w-full py-3 px-4 leading-tight"
                     style="border-color: var(--neutral-gray); color: var(--text-dark);">
             </div>
 
             <div class="mb-6">
-                <label for="file" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);">Excel файл (.xlsx, .xls)</label>
+                <label for="file" id="label-file" class="block text-sm font-semibold mb-2" style="color: var(--text-dark);"></label>
                 <input type="file" id="file" name="file" accept=".xlsx,.xls" required
                     class="shadow-sm border rounded w-full py-3 px-4 leading-tight"
                     style="border-color: var(--neutral-gray); color: var(--text-dark);">
             </div>
 
-            <button type="submit" id="upload-btn" class="btn-primary">
-                Загрузить
-            </button>
+            <button type="submit" id="upload-btn" class="btn-primary"></button>
         </form>
     </div>
 
     <div class="card p-8">
-        <h2 class="text-2xl font-semibold mb-6" style="color: var(--text-dark);">Последние загрузки</h2>
+        <h2 id="recent-title" class="text-2xl font-semibold mb-6" style="color: var(--text-dark);"></h2>
 
-        <div id="reports-loading" style="color: var(--text-medium);">Загрузка...</div>
-        <div id="reports-empty" class="hidden" style="color: var(--text-medium);">Отчеты еще не загружены.</div>
+        <div id="reports-loading" style="color: var(--text-medium);"></div>
+        <div id="reports-empty" class="hidden" style="color: var(--text-medium);"></div>
 
         <div id="reports-table" class="hidden overflow-x-auto">
             <table class="min-w-full">
                 <thead>
                     <tr>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Название</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Строки</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Загружено</th>
-                        <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Действия</th>
+                        <th id="th-name" class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider"></th>
+                        <th id="th-date" class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider"></th>
+                        <th id="th-actions" class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider"></th>
                     </tr>
                 </thead>
                 <tbody id="reports-body">
@@ -58,6 +55,47 @@
 
 {% block extra_js %}
 <script>
+    const isKk = I18n.currentLang === 'kk';
+    const locale = isKk ? 'kk-KZ' : 'ru-RU';
+
+    // Translations
+    const texts = {
+        pageTitle: isKk ? 'Әкімші панелі' : 'Панель администратора',
+        uploadTitle: isKk ? 'Excel файлын жүктеу' : 'Загрузка Excel файла',
+        reportName: isKk ? 'Есеп атауы' : 'Название отчета',
+        excelFile: isKk ? 'Excel файл (.xlsx, .xls)' : 'Excel файл (.xlsx, .xls)',
+        upload: isKk ? 'Жүктеу' : 'Загрузить',
+        uploading: isKk ? 'Жүктелуде...' : 'Загрузка...',
+        recentUploads: isKk ? 'Соңғы жүктеулер' : 'Последние загрузки',
+        loading: isKk ? 'Жүктелуде...' : 'Загрузка...',
+        noReports: isKk ? 'Есептер әлі жүктелмеген.' : 'Отчеты еще не загружены.',
+        name: isKk ? 'Атауы' : 'Название',
+        date: isKk ? 'Жүктелген' : 'Загружено',
+        actions: isKk ? 'Әрекеттер' : 'Действия',
+        view: isKk ? 'Қарау' : 'Просмотр',
+        delete: isKk ? 'Жою' : 'Удалить',
+        uploadSuccess: isKk ? 'Есеп сәтті жүктелді!' : 'Отчет успешно загружен!',
+        uploadError: isKk ? 'Жүктеу қатесі. Қайталап көріңіз.' : 'Ошибка загрузки. Попробуйте снова.',
+        deleteConfirm: isKk ? 'есебін жою керек пе?' : 'Удалить отчет',
+        deleteError: isKk ? 'Жою қатесі:' : 'Ошибка удаления:',
+        tryAgain: isKk ? 'Қайталап көріңіз' : 'Попробуйте снова',
+        loadError: isKk ? 'Есептерді жүктеу мүмкін болмады.' : 'Не удалось загрузить отчеты.'
+    };
+
+    function updateLabels() {
+        document.getElementById('page-title').textContent = texts.pageTitle;
+        document.getElementById('upload-title').textContent = texts.uploadTitle;
+        document.getElementById('label-report-name').textContent = texts.reportName;
+        document.getElementById('label-file').textContent = texts.excelFile;
+        document.getElementById('upload-btn').textContent = texts.upload;
+        document.getElementById('recent-title').textContent = texts.recentUploads;
+        document.getElementById('reports-loading').textContent = texts.loading;
+        document.getElementById('reports-empty').textContent = texts.noReports;
+        document.getElementById('th-name').textContent = texts.name;
+        document.getElementById('th-date').textContent = texts.date;
+        document.getElementById('th-actions').textContent = texts.actions;
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
         Auth.requireAuth();
         if (!Auth.isAdmin()) {
@@ -65,6 +103,7 @@
             return;
         }
 
+        updateLabels();
         loadReports();
 
         document.getElementById('upload-form').addEventListener('submit', async function(e) {
@@ -78,7 +117,7 @@
 
             messageDiv.classList.add('hidden');
             uploadBtn.disabled = true;
-            uploadBtn.textContent = 'Загрузка...';
+            uploadBtn.textContent = texts.uploading;
 
             try {
                 const formData = new FormData();
@@ -87,19 +126,19 @@
 
                 const response = await API.uploadFile('/api/reports/', formData);
 
-                messageDiv.textContent = 'Отчет успешно загружен!';
+                messageDiv.textContent = texts.uploadSuccess;
                 messageDiv.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4';
                 messageDiv.classList.remove('hidden');
 
                 document.getElementById('upload-form').reset();
                 loadReports();
             } catch (error) {
-                messageDiv.textContent = error.message || 'Ошибка загрузки. Попробуйте снова.';
+                messageDiv.textContent = error.message || texts.uploadError;
                 messageDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
                 messageDiv.classList.remove('hidden');
             } finally {
                 uploadBtn.disabled = false;
-                uploadBtn.textContent = 'Загрузить';
+                uploadBtn.textContent = texts.upload;
             }
         });
     });
@@ -127,11 +166,10 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="px-6 py-4 text-sm font-semibold" style="color: var(--text-dark);">${escapeHtml(report.title)}</td>
-                    <td class="px-6 py-4 text-sm" style="color: var(--text-medium);">${report.row_count}</td>
-                    <td class="px-6 py-4 text-sm" style="color: var(--text-medium);">${new Date(report.uploaded_at).toLocaleString('ru-RU')}</td>
+                    <td class="px-6 py-4 text-sm" style="color: var(--text-medium);">${new Date(report.uploaded_at).toLocaleString(locale)}</td>
                     <td class="px-6 py-4 text-sm flex gap-4">
-                        <a href="/report/${report.id}/" class="font-semibold hover:underline" style="color: var(--primary-teal);">Просмотр</a>
-                        <button onclick="deleteReport(${report.id}, '${escapeHtml(report.title)}')" class="font-semibold hover:underline" style="color: #dc2626;">Удалить</button>
+                        <a href="/report/${report.id}/" class="font-semibold hover:underline" style="color: var(--primary-teal);">${texts.view}</a>
+                        <button onclick="deleteReport(${report.id}, '${escapeHtml(report.title)}')" class="font-semibold hover:underline" style="color: #dc2626;">${texts.delete}</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -140,18 +178,19 @@
             emptyDiv.classList.add('hidden');
             table.classList.remove('hidden');
         } catch (error) {
-            loadingDiv.textContent = 'Не удалось загрузить отчеты.';
+            loadingDiv.textContent = texts.loadError;
         }
     }
 
     async function deleteReport(id, title) {
-        if (!confirm(`Удалить отчет "${title}"?`)) return;
+        const confirmMsg = isKk ? `"${title}" ${texts.deleteConfirm}` : `${texts.deleteConfirm} "${title}"?`;
+        if (!confirm(confirmMsg)) return;
 
         try {
             await API.delete(`/api/reports/${id}/`);
             loadReports();
         } catch (error) {
-            alert('Ошибка удаления: ' + (error.message || 'Попробуйте снова'));
+            alert(texts.deleteError + ' ' + (error.message || texts.tryAgain));
         }
     }
 </script>

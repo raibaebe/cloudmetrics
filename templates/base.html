@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Отбасы банк - DataVault{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <link rel="icon" type="image/png" href="/static/images/favicon.png">
 </head>
 <body class="min-h-screen flex flex-col" style="background-color: var(--neutral-light-gray);">
     <app-navbar></app-navbar>
@@ -15,11 +15,13 @@
         {% block content %}{% endblock %}
     </main>
 
-    <app-footer></app-footer>
-
-    <script src="/static/js/script.js?v=2"></script>
-    <script src="/static/js/navbar.js?v=2"></script>
-    <script src="/static/js/footer.js?v=2"></script>
+    <script src="/static/js/i18n.js?v=4"></script>
+    <script src="/static/js/script.js?v=4"></script>
+    <script src="/static/js/navbar.js?v=4"></script>
+    <script>
+        // Set HTML lang attribute based on saved language
+        document.getElementById('html-root').lang = I18n.getLanguage() === 'kk' ? 'kk' : 'ru';
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

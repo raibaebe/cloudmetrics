@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:hcsbk.kz)"
+      "WebFetch(domain:hcsbk.kz)",
+      "Bash(.\\\\venv\\\\Scripts\\\\python.exe manage.py check:*)",
+      "Bash(venvScriptspython.exe manage.py check)",
+      "Bash(cmd /c \"cd /d c:\\\\Users\\\\Raikhan\\\\Desktop\\\\datavaultpro && venv\\\\Scripts\\\\python.exe manage.py check\")",
+      "Bash(\"c:/Users/Raikhan/Desktop/datavaultpro/venv/Scripts/pip.exe\" install psycopg2-binary)",
+      "Bash(\"c:/Users/Raikhan/Desktop/datavaultpro/venv/Scripts/python.exe\" -c:*)",
+      "Bash(\"c:/Users/Raikhan/Desktop/datavaultpro/venv/Scripts/pip.exe\" install python-dotenv)",
+      "Bash(\"c:/Users/Raikhan/Desktop/datavaultpro/venv/Scripts/python.exe\" \"c:/Users/Raikhan/Desktop/datavaultpro/manage.py\" check --database default)",
+      "Bash(\"c:/Users/Raikhan/Desktop/datavaultpro/venv/Scripts/python.exe\" \"c:/Users/Raikhan/Desktop/datavaultpro/manage.py\" showmigrations --database default)",
+      "Bash(\"c:/Users/Raikhan/Desktop/datavaultpro/venv/Scripts/python.exe\" \"c:/Users/Raikhan/Desktop/datavaultpro/manage.py\":*)",
+      "Bash(\"./venv/Scripts/python.exe\" -m py_compile:*)"
     ]
   }
 }
