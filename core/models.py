@@ -8,6 +8,7 @@ class Report(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     file = models.FileField(upload_to='reports/')
     headers = models.JSONField(default=list, blank=True)  # Store column order
+    reporting_period = models.CharField(max_length=255, blank=True, null=True)  # Editable period
 
     class Meta:
         ordering = ['-uploaded_at']

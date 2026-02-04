@@ -28,7 +28,15 @@
                 </div>
                 <div>
                     <span class="font-semibold" style="color: var(--text-dark);" id="label-reporting-period"></span>
-                    <span id="report-period" style="color: var(--text-medium);"></span>
+                    <span id="report-period-display">
+                        <span id="report-period" style="color: var(--text-medium);"></span>
+                        <button id="edit-period-btn" class="hidden ml-2 text-xs px-2 py-1 rounded" style="background-color: var(--primary-teal); color: white;">✎</button>
+                    </span>
+                    <span id="report-period-edit" class="hidden">
+                        <input type="text" id="period-input" class="text-sm px-2 py-1 border rounded" style="border-color: var(--neutral-gray); width: 200px;">
+                        <button id="save-period-btn" class="ml-1 text-xs px-2 py-1 rounded" style="background-color: var(--primary-teal); color: white;">✓</button>
+                        <button id="cancel-period-btn" class="ml-1 text-xs px-2 py-1 rounded" style="background-color: var(--neutral-gray); color: var(--text-dark);">✕</button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -72,6 +80,8 @@
 
     let reportTitle = '';
     let currentUploadedAt = null;
+    let currentReportingPeriod = null;
+    let savedReportingPeriod = null;
 
     // Column names that should be formatted as currency (Tenge)
     const currencyColumns = ['Стоимость', 'Цена', 'стоимость', 'цена', 'cost', 'price', 'Cost', 'Price', 'Құны', 'Баға'];
@@ -189,6 +199,7 @@
             document.getElementById('admin-actions').classList.remove('hidden');
             document.getElementById('delete-btn').addEventListener('click', deleteReport);
             setupDateEditing();
+            setupPeriodEditing();
         }
 
         document.getElementById('prev-btn').addEventListener('click', () => {
@@ -212,12 +223,14 @@
 
             reportTitle = report.title;
             currentUploadedAt = report.uploaded_at;
+            savedReportingPeriod = report.reporting_period;
             document.getElementById('report-title').textContent = report.title;
             document.getElementById('report-date').textContent = Format.dateTime(report.uploaded_at);
 
-            // Show edit button for admins
+            // Show edit buttons for admins
             if (Auth.isAdmin()) {
                 document.getElementById('edit-date-btn').classList.remove('hidden');
+                document.getElementById('edit-period-btn').classList.remove('hidden');
             }
 
             document.getElementById('report-loading').classList.add('hidden');
@@ -274,6 +287,55 @@
         });
     }
 
+    function setupPeriodEditing() {
+        const editBtn = document.getElementById('edit-period-btn');
+        const saveBtn = document.getElementById('save-period-btn');
+        const cancelBtn = document.getElementById('cancel-period-btn');
+        const periodDisplay = document.getElementById('report-period-display');
+        const periodEdit = document.getElementById('report-period-edit');
+        const periodInput = document.getElementById('period-input');
+
+        editBtn.addEventListener('click', () => {
+            periodInput.value = currentReportingPeriod || '';
+            periodDisplay.classList.add('hidden');
+            periodEdit.classList.remove('hidden');
+            periodInput.focus();
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            periodEdit.classList.add('hidden');
+            periodDisplay.classList.remove('hidden');
+        });
+
+        saveBtn.addEventListener('click', async () => {
+            const newPeriod = periodInput.value.trim();
+            if (!newPeriod) return;
+
+            try {
+                await API.fetch(`/api/reports/${reportId}/`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ reporting_period: newPeriod })
+                });
+
+                currentReportingPeriod = newPeriod;
+                savedReportingPeriod = newPeriod;
+                document.getElementById('report-period').textContent = newPeriod;
+
+                periodEdit.classList.add('hidden');
+                periodDisplay.classList.remove('hidden');
+            } catch (error) {
+                alert(I18n.currentLang === 'kk' ? 'Кезеңді сақтау мүмкін болмады' : 'Не удалось сохранить период');
+            }
+        });
+
+        // Allow Enter key to save
+        periodInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveBtn.click();
+            }
+        });
+    }
+
     async function deleteReport() {
         const confirmMsg = I18n.currentLang === 'kk'
             ? `"${reportTitle}" есебін жою керек пе?`
@@ -301,9 +363,13 @@
             const rows = data.results;
             const headers = data.headers || [];
 
-            // Detect and set the reporting period
-            const period = detectReportPeriod(rows, headers);
-            document.getElementById('report-period').textContent = period;
+            // Use saved period or detect from data
+            if (savedReportingPeriod) {
+                currentReportingPeriod = savedReportingPeriod;
+            } else {
+                currentReportingPeriod = detectReportPeriod(rows, headers);
+            }
+            document.getElementById('report-period').textContent = currentReportingPeriod;
 
             const displayHeader = (h) => {
                 if (h.startsWith('Unnamed') || h.startsWith('col_')) return '';

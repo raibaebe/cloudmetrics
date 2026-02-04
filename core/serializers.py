@@ -26,7 +26,7 @@ class ReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = ['id', 'title', 'uploaded_by', 'uploaded_at', 'file', 'row_count']
+        fields = ['id', 'title', 'uploaded_by', 'uploaded_at', 'file', 'row_count', 'reporting_period']
         read_only_fields = ['uploaded_by']
 
     def get_row_count(self, obj):
