@@ -11,16 +11,21 @@ python manage.py collectstatic --no-input
 # Run migrations
 python manage.py migrate
 
-# Create superuser or reset password
+# Create the initial superuser only when credentials are provided by environment.
 python manage.py shell << EOF
+import os
 from django.contrib.auth import get_user_model
 User = get_user_model()
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@cloudmtrx.com', 'Cloudmtrx2026!')
+
+username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
+email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@cloudmtrx.com')
+password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+
+if password and not User.objects.filter(username=username).exists():
+    User.objects.create_superuser(username, email, password)
     print('Superuser created')
+elif User.objects.filter(username=username).exists():
+    print('Superuser already exists')
 else:
-    u = User.objects.get(username='admin')
-    u.set_password('Cloudmtrx2026!')
-    u.save()
-    print('Superuser password reset')
+    print('Skipping superuser creation: DJANGO_SUPERUSER_PASSWORD is not set')
 EOF
