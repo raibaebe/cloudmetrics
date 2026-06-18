@@ -9,10 +9,14 @@ class Report(models.Model):
     uploaded_at = models.DateTimeField(default=timezone.now)
     file = models.FileField(upload_to='reports/')
     headers = models.JSONField(default=list, blank=True)  # Store column order
+    row_count = models.PositiveIntegerField(default=0)
     reporting_period = models.CharField(max_length=255, blank=True, null=True)  # Editable period
 
     class Meta:
         ordering = ['-uploaded_at']
+        indexes = [
+            models.Index(fields=['-uploaded_at'], name='report_uploaded_at_idx'),
+        ]
 
     def __str__(self):
         return self.title
@@ -25,6 +29,9 @@ class ReportData(models.Model):
 
     class Meta:
         ordering = ['row_number']
+        indexes = [
+            models.Index(fields=['report', 'row_number'], name='reportdata_report_row_idx'),
+        ]
 
     def __str__(self):
         return f"{self.report.title} - Row {self.row_number}"

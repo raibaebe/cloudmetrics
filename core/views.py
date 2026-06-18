@@ -1,10 +1,10 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth.models import User
-import pandas as pd
+from openpyxl import load_workbook
 
 from .models import Report, ReportData
 from .serializers import ReportSerializer, ReportUploadSerializer, ReportDataSerializer, UserSerializer, RegisterSerializer
@@ -17,9 +17,19 @@ class ReportDataPagination(PageNumberPagination):
     max_page_size = 200
 
 
+class ReportPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
+    pagination_class = ReportPagination
+
+    def get_queryset(self):
+        return Report.objects.select_related('uploaded_by')
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
@@ -45,32 +55,50 @@ class ReportViewSet(viewsets.ModelViewSet):
         )
 
         try:
-            df = pd.read_excel(file, engine='openpyxl', header=None, dtype=str)
+            file.seek(0)
+            workbook = load_workbook(file, read_only=True, data_only=True)
+            worksheet = workbook.active
+            non_empty_columns = set()
+            header_candidates = []
+            non_empty_row_count = 0
 
-            if df.empty:
+            for raw_row in worksheet.iter_rows(values_only=True):
+                if not raw_row or not self._row_has_values(raw_row):
+                    continue
+
+                non_empty_row_count += 1
+                for col_idx, value in enumerate(raw_row):
+                    if self._has_value(value):
+                        non_empty_columns.add(col_idx)
+
+                if len(header_candidates) < 10:
+                    header_candidates.append(tuple(raw_row))
+
+            workbook.close()
+
+            if non_empty_row_count == 0:
                 raise ValueError("Excel file is empty")
 
-            df = df.dropna(axis=1, how='all')
-            df = df.reset_index(drop=True)
-
-            if df.empty or len(df) < 1:
-                raise ValueError("Excel file has no data")
+            non_empty_columns = sorted(non_empty_columns)
+            pruned_candidates = [
+                self._prune_row(row, non_empty_columns)
+                for row in header_candidates
+            ]
 
             header_idx = 0
-            num_cols = len(df.columns)
-            for idx in range(min(10, len(df))):
-                row = df.iloc[idx]
-                non_empty = sum(1 for val in row if not pd.isna(val) and str(val).strip() != '')
+            num_cols = len(non_empty_columns)
+            for idx, row in enumerate(pruned_candidates):
+                non_empty = sum(1 for val in row if self._has_value(val))
                 if non_empty >= num_cols * 0.3:
                     header_idx = idx
                     break
 
-            header_row = df.iloc[header_idx]
+            header_row = pruned_candidates[header_idx]
             headers = []
             used_names = set()
             for i in range(num_cols):
-                val = header_row.iloc[i] if i < len(header_row) else None
-                if pd.isna(val) or str(val).strip() == '':
+                val = header_row[i] if i < len(header_row) else None
+                if val is None or str(val).strip() == '':
                     name = f'col_{i}'
                 else:
                     name = str(val).strip()
@@ -79,19 +107,27 @@ class ReportViewSet(viewsets.ModelViewSet):
                 used_names.add(name)
                 headers.append(name)
 
-            df = df.iloc[header_idx + 1:]
-            df = df.dropna(how='all')
-            df = df.reset_index(drop=True)
+            file.seek(0)
+            workbook = load_workbook(file, read_only=True, data_only=True)
+            worksheet = workbook.active
 
             report_data_objects = []
             row_num = 1
-            for idx, row in df.iterrows():
-                if row.isna().all():
+            non_empty_seen = 0
+            for raw_row in worksheet.iter_rows(values_only=True):
+                if not raw_row or not self._row_has_values(raw_row):
                     continue
+
+                if non_empty_seen <= header_idx:
+                    non_empty_seen += 1
+                    continue
+
+                non_empty_seen += 1
+                row = self._prune_row(raw_row, non_empty_columns)
                 row_data = {}
                 for i, header in enumerate(headers):
-                    value = row.iloc[i] if i < len(row) else None
-                    if pd.isna(value) or value is None:
+                    value = row[i] if i < len(row) else None
+                    if value is None or str(value).strip() == '':
                         row_data[header] = None
                     else:
                         try:
@@ -109,11 +145,19 @@ class ReportViewSet(viewsets.ModelViewSet):
                 )
                 row_num += 1
 
-            ReportData.objects.bulk_create(report_data_objects, batch_size=1000)
+                if len(report_data_objects) >= 1000:
+                    ReportData.objects.bulk_create(report_data_objects, batch_size=1000)
+                    report_data_objects = []
+
+            workbook.close()
+
+            if report_data_objects:
+                ReportData.objects.bulk_create(report_data_objects, batch_size=1000)
 
             # Save headers to preserve column order
             report.headers = headers
-            report.save(update_fields=['headers'])
+            report.row_count = row_num - 1
+            report.save(update_fields=['headers', 'row_count'])
 
         except Exception as e:
             report.delete()
@@ -127,11 +171,23 @@ class ReportViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
 
+    @staticmethod
+    def _has_value(value):
+        return value is not None and str(value).strip() != ''
+
+    @classmethod
+    def _row_has_values(cls, row):
+        return any(cls._has_value(value) for value in row)
+
+    @staticmethod
+    def _prune_row(row, columns):
+        return tuple(row[col_idx] if col_idx < len(row) else None for col_idx in columns)
+
     @action(detail=True, methods=['get'])
     def data(self, request, pk=None):
         report = self.get_object()
         paginator = ReportDataPagination()
-        data_rows = report.data_rows.all()
+        data_rows = report.data_rows.only('id', 'row_number', 'data').order_by('row_number')
         page = paginator.paginate_queryset(data_rows, request)
 
         if page is not None:

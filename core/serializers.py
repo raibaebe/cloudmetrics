@@ -22,16 +22,12 @@ class ReportDataSerializer(serializers.ModelSerializer):
 
 class ReportSerializer(serializers.ModelSerializer):
     uploaded_by = UserSerializer(read_only=True)
-    row_count = serializers.SerializerMethodField()
+    row_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Report
         fields = ['id', 'title', 'uploaded_by', 'uploaded_at', 'file', 'row_count', 'reporting_period']
         read_only_fields = ['uploaded_by']
-
-    def get_row_count(self, obj):
-        return obj.data_rows.count()
-
 
 class ReportUploadSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,8 +35,8 @@ class ReportUploadSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'file']
 
     def validate_file(self, value):
-        if not value.name.endswith(('.xlsx', '.xls')):
-            raise serializers.ValidationError("Only Excel files (.xlsx, .xls) are allowed.")
+        if not value.name.lower().endswith('.xlsx'):
+            raise serializers.ValidationError("Only Excel files (.xlsx) are allowed.")
         return value
 
 
